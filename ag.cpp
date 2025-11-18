@@ -2,17 +2,14 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
-//coisas do pdf q não entendi com 1000% de clareza: 
 /*
-    "Os paraˆmetros empregados ao longo da execuc ̧ a ̃o devem ser definidos na interface do 
-    sistema: taxas de cruzamento e mutac ̧ a ̃o, tamanho da populac ̧ a ̃o e nu ́ mero de gerac ̧o ̃es";
+    TEM Q FAZER UMA INTERFACE QUE É ONDE VAI SER DEFINIDO O TAMANHO DA POPULAÇÃO, O NÚMERO DE GERAÇÕES (CRITÉRIO DE PARADA), E AS TAXAS
+    DE CRUZAMENTO E MUTAÇÃO
 
-    //tá, acho que entendi. A gente precisa definir a taxa de cruzamento e mutação, o tamanho da população e o número de gerações, né?
-
-    nmrl q a gnt vai ter q operar com float?
     eu não faço ideia de como q faz os gráfico e os crl; se n me engano o b-word falo 
     q ia disponibilziar um exemplo mas até agora nada
 */
@@ -31,7 +28,7 @@ public:
     Individuo* head;
     Individuo* tail; //facilitar pra adicionar novos individuos
 
-    Populacao(){
+    Populacao(){ //essa construção só vale pra primeira geração; provavelmente vai ter que mudar isso
         string x = FloatToBinary(-15);
         string y = FloatToBinary(-15);
         float z = Otimizacao(-15, -15);
@@ -41,17 +38,18 @@ public:
         head = tail = &h;
     }
 
-    void AdicionarIndividuo() {}
+    void AdicionarIndividuo() {/*os genes dos indivíduos vão ser gerados aleatoriamente, né?*/}
 
 
     string FloatToBinary(float f) { //armazenar em cada indivíduo       -> dá pra chamar a função de Code
         int integer = static_cast<int>(f);
-        float floating = f < 0? f + integer: f - integer;
+        float floating = f - integer;
 
         //viuuuuuuuu faz aqui aquele bagulho pra preencher uma string com 0, q eu n sei como faz
         //vamo usar 6 bits pra inteiro e 3 pra float, daí
-        //cara, na real q os 5 bits seriam só pros genes x e y, pro fitness precisaria de pelo menos 10
+        //cara, na real q os 6 bits seriam só pros genes x e y, pro fitness precisaria de pelo menos 11
         //então acho q faz um if pra se o |integer| for <= 15, usa 6 bits só; e se for maior, usa mais (acho q uns 12 ou 13 já da conta)
+        //lembra que o bit mais signficativo é o q indica sinal ☝
 
         string binteger = integer < 0? "1": "0";
         if(integer == 0) binteger += "0";            
@@ -61,7 +59,7 @@ public:
                 binteger += integer%2? '1': '0';
                 integer /= 2;
             }
-            reverse(binteger.begin(), binteger.end()); //q função gostosa slk
+            reverse(binteger.begin()+1, binteger.end()); //o +1 é pra manter o bit de sinal
         }
 
 
@@ -84,9 +82,33 @@ public:
         }
         
         return binteger + "." + bfloating; //isso aqui é coisa de python
-    } 
+    }
 
-    float BinaryToFloat(string s) {} //usar para a função de otimização  -> dá pra chamar a função de Decode
+    float BinaryToFloat(const string &s) { //usar para a função de otimização  -> dá pra chamar a função de Decode
+        int inumber = 0;
+        float f = 0;
+        bool signal = s[0] == '1'? true: false;
+        size_t intlen = s.find(".");
+        size_t int_start = 1;
+        size_t int_end = intlen - 1;
+
+        int i = 0;
+        int exp = 0;
+        for(i = static_cast<int>(int_end); i >= static_cast<int>(int_start); i--, exp++) {
+            if(s[i] == '1') inumber += (1 << exp); //multiplicando por potencia de 2
+        }
+    
+        i = intlen + 1;
+        exp = -1;
+        for(i = static_cast<int>(intlen) + 1; i < s.size(); i++, exp--) {
+            if(s[i] == '1') f += pow(2.0, exp);
+        }
+        
+        float result = static_cast<float>(inumber) + f;
+        if(signal) result = -result;
+        
+        return result;
+    } 
 
     Individuo Sexo(Individuo a, Individuo b) { //função de cruzamento (uniforme) -> não sei se recebe/retorna ponteiro ou se assim ta certo
         //a máscara define se o filho vai pegar um bit do individuo a(0) ou do individuo b(1)
@@ -148,7 +170,7 @@ class Geracoes {}; //chapei demais? -> se for usar isso aqui, vai ter q mudar a 
 Individuo Select(Populacao p) {} //função de seleção (por ranking)
 
 
-
+//aaa
 
 
 /*elitismo acho que não precisa função, só pegar o indivíduo retornado da função de seleção
