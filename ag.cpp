@@ -1,8 +1,4 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <cmath>
+#include "ag.h"
 
 using namespace std;
 
@@ -14,169 +10,168 @@ using namespace std;
     q ia disponibilziar um exemplo mas até agora nada
 */
 
-struct Individuo { 
-public:
-    string gen_x, gen_y;
-    string fitness; //z
-    Individuo* next;
+float GetFitness(float x, float y) {
+    // 2x² - 13x + xy - 7y/3
+    return (2*(x*x) - 13*x + x*y - (7*y)/3);
+} 
 
-    Individuo(string x, string y, string z): gen_x(x), gen_y(y), fitness(z), next(nullptr){}
-};
-
-class Populacao { //não sei direito como q vamos interagir com as gerações e os crl
-public:
-    Individuo* head;
-    Individuo* tail; //facilitar pra adicionar novos individuos
-
-    Populacao(){ //essa construção só vale pra primeira geração; provavelmente vai ter que mudar isso
-        string x = FloatToBinary(-15);
-        string y = FloatToBinary(-15);
-        float z = Otimizacao(-15, -15);
-        string fitness = FloatToBinary(z);
-
-        Individuo h(x, y, fitness);
-        head = tail = &h;
-    }
-
-    void AdicionarIndividuo() {/*os genes dos indivíduos vão ser gerados aleatoriamente, né?*/}
+Individuo::Individuo(std::string x, std::string y, float z): gen_x(x), gen_y(y), fitness(z){}
 
 
-    string FloatToBinary(float f) { //armazenar em cada indivíduo       -> dá pra chamar a função de Code
-        int integer = static_cast<int>(f);
-        float floating = f - integer;
 
-        //viuuuuuuuu faz aqui aquele bagulho pra preencher uma string com 0, q eu n sei como faz
-        //vamo usar 6 bits pra inteiro e 3 pra float, daí
-        //cara, na real q os 6 bits seriam só pros genes x e y, pro fitness precisaria de pelo menos 11
-        //então acho q faz um if pra se o |integer| for <= 15, usa 6 bits só; e se for maior, usa mais (acho q uns 12 ou 13 já da conta)
-        //lembra que o bit mais signficativo é o q indica sinal ☝
+Populacao::Populacao(){ //essa construção só vale pra primeira geração; provavelmente vai ter que mudar isso
+    string x = FloatToBinary(-15.0f);
+    string y = FloatToBinary(-15.0f);
+    float z = GetFitness(-15.0f, -15.0f);
 
-        string binteger = integer < 0? "1": "0";
-        if(integer == 0) binteger += "0";            
-        else {
-            if(integer < 0) integer = -integer; //acho q n faz diferença fazer a operação com ele positivo ne?
-            while(integer > 0) {
-                binteger += integer%2? '1': '0';
-                integer /= 2;
-            }
-            reverse(binteger.begin()+1, binteger.end()); //o +1 é pra manter o bit de sinal
-        }
-
-
-        string bfloating = "";
-        int precisao = 3;
-        if(floating == 0) bfloating = "0";
-        else {
-            if(floating < 0) floating = -floating;
-            while(precisao > 0 && floating > 0) {
-                floating *= 2;
-
-                if(floating >= 1) {
-                    bfloating += '1';
-                    floating -= 1;
-                }
-                else bfloating += '0';
-
-                precisao--;
-            }
-        }
-        
-        return binteger + "." + bfloating; //isso aqui é coisa de python
-    }
-
-    float BinaryToFloat(const string &s) { //usar para a função de otimização  -> dá pra chamar a função de Decode
-        int inumber = 0;
-        float f = 0;
-        bool signal = s[0] == '1'? true: false;
-        size_t intlen = s.find(".");
-        size_t int_start = 1;
-        size_t int_end = intlen - 1;
-
-        int i = 0;
-        int exp = 0;
-        for(i = static_cast<int>(int_end); i >= static_cast<int>(int_start); i--, exp++) {
-            if(s[i] == '1') inumber += (1 << exp); //multiplicando por potencia de 2
-        }
+    subjects.emplace_back(x, y, z);
     
-        i = intlen + 1;
-        exp = -1;
-        for(i = static_cast<int>(intlen) + 1; i < s.size(); i++, exp--) {
-            if(s[i] == '1') f += pow(2.0, exp);
+    fitness_global.emplace_back(z);
+    fitness_medio = accumulate(fitness_global.begin(), fitness_global.end(), 0) / fitness_global.size();
+}
+
+Populacao::~Populacao(){}
+
+void Populacao::AdicionarIndividuo(float x, float y) {
+    float z = GetFitness(x, y);
+    subjects.emplace_back(FloatToBinary(x), FloatToBinary(y), z);
+    pop_size = subjects.size();
+    fitness_global.emplace_back(z);
+}
+
+float Populacao::UpdateFitness(){
+    return fitness_medio = accumulate(fitness_global.begin(), fitness_global.end(), 0) / fitness_global.size();
+}
+
+string Populacao::FloatToBinary(float f) { //armazenar em cada indivíduo       -> dá pra chamar a função de Code
+    int integer = static_cast<int>(f);
+    float floating = f - integer;
+
+    string binteger = integer < 0? "1": "0";
+    if(integer == 0) binteger += "0";
+    else {
+        if(integer < 0) integer = -integer; //acho q n faz diferença fazer a operação com ele positivo ne?
+        while(integer > 0) {
+            binteger += integer%2? '1': '0';
+            integer /= 2;
         }
-        
-        float result = static_cast<float>(inumber) + f;
-        if(signal) result = -result;
-        
-        return result;
-    } 
+        reverse(binteger.begin()+1, binteger.end()); //o +1 é pra manter o bit de sinal
+    }
 
-    Individuo Sexo(Individuo a, Individuo b) { //função de cruzamento (uniforme) -> não sei se recebe/retorna ponteiro ou se assim ta certo
-        //a máscara define se o filho vai pegar um bit do individuo a(0) ou do individuo b(1)
-        string mascara = "01010.010"; //coloquei esse só como placeholder, vamo mudar dps
-        string xa = a.gen_x;
-        string xb = b.gen_x;
-        string ya = a.gen_y;
-        string yb = b.gen_y;
-        string x, y;
-        int len = xa.length();
 
-        for(int i = 0; i < len; i++) {
-            if(mascara[i] == '0') {
-                x[i] = xa[i];
-                y[i] = ya[i];
+    string bfloating = "";
+    int precisao = 3;
+    if(floating == 0) bfloating = "0";
+    else {
+        if(floating < 0) floating = -floating;
+        while(precisao > 0 && floating > 0) {
+            floating *= 2;
+
+            if(floating >= 1) {
+                bfloating += '1';
+                floating -= 1;
             }
-            else if(mascara[i] == '1') {
-                x[i] = xb[i];
-                y[i] = yb[i];
-            }
-            else {
-                x[i] = '.';
-                y[i] = '.';
-            }
+            else bfloating += '0';
+
+            precisao--;
         }
+    }
+    
+    DEBUG_PRINT("Bin: " << "(" << f << ")" << binteger << "." << bfloating);
 
-        float xf = BinaryToFloat(x);
-        float yf = BinaryToFloat(y);
-        float z = Otimizacao(xf, yf);
-        string fitness = FloatToBinary(z);
+    return binteger + "." + bfloating; //isso aqui é coisa de python
+}
 
-        Individuo c(x, y, fitness);
+float Populacao::BinaryToFloat(const string &s) { //usar para a função de otimização  -> dá pra chamar a função de Decode
+    int inumber = 0;
+    float f = 0;
+    bool signal = s[0] == '1'? true: false;
+    size_t intlen = s.find(".");
+    size_t int_start = 1;
+    size_t int_end = intlen - 1;
 
-        return c; //depois de retornar ainda tem que adicionar na população
-    } 
+    int i = 0;
+    int exp = 0;
+    for(i = static_cast<int>(int_end); i >= static_cast<int>(int_start); i--, exp++) {
+        if(s[i] == '1') inumber += (1 << exp); //multiplicando por potencia de 2
+    }
+    
+    exp = -1;
+    for(i = static_cast<int>(intlen) + 1; i < static_cast<int>(s.size()); i++, exp--) {
+        if(s[i] == '1') f += pow(2.0, exp);
+    }
+    
+    float result = static_cast<float>(inumber) + f;
+    if(signal) result = -result;
+    
+    return result;
+} 
 
-    void Mutacao(Individuo *a) { //função de mutação (inversão dos bits)
-        //a gnt tem que definir a taxa de mutação, mas isso dá pra mexer quando as gerações estiverem ocorrendo
-        string x = a->gen_x;
-        string y = a->gen_y;
+Individuo Populacao::Cruzamento(Individuo a, Individuo b) { //função de cruzamento (uniforme)
+    //a máscara define se o filho vai pegar um bit do individuo a(0) ou do individuo b(1)
+    string mascara = "00110.110"; 
+    string xa = a.gen_x;
+    string xb = b.gen_x;
+    string ya = a.gen_y;
+    string yb = b.gen_y;
+    string x, y;
+    int len = xa.length();
 
-        int len = x.length();
-
-        for(int i = 0; i < len; i++) {
-            if(x[i] != '.') x[i] = x[i] == '0'? '1': '0';
-            if(y[i] != '.') y[i] = y[i] == '0'? '1': '0';
+    for(int i = 0; i < len; i++) {
+        if(mascara[i] == '0') {
+            x[i] = xa[i];
+            y[i] = ya[i];
         }
+        else if(mascara[i] == '1') {
+            x[i] = xb[i];
+            y[i] = yb[i];
+        }
+        else {
+            x[i] = '.';
+            y[i] = '.';
+        }
+    }
 
-        a->gen_x = x;
-        a->gen_y = y;
+    float xf = BinaryToFloat(x);
+    float yf = BinaryToFloat(y);
+    float z = GetFitness(xf, yf);
 
-        //como passei um ponteiro pro individuo, já tá alterando direto nele, né? não precisa retornar ele, certo?
-    } 
-};
+    Individuo c(x, y, z);
 
-class Geracoes {}; //chapei demais? -> se for usar isso aqui, vai ter q mudar a construção da classe da população, pq aquela só vai valer pra primeir geração
+    return c; //depois de retornar ainda tem que adicionar na população
+} 
 
+void Populacao::Mutacao(Individuo *a) { //função de mutação (inversão dos bits)
+    //a gnt tem que definir a taxa de mutação, mas isso dá pra mexer quando as gerações estiverem ocorrendo
+    string x = a->gen_x;
+    string y = a->gen_y;
 
-Individuo Select(Populacao p) {} //função de seleção (por ranking)
+    int len = x.length();
 
+    for(int i = 0; i < len; i++) {
+        if(x[i] != '.') x[i] = x[i] == '0'? '1': '0';
+        if(y[i] != '.') y[i] = y[i] == '0'? '1': '0';
+    }
 
-//aaa
+    a->gen_x = x;
+    a->gen_y = y;
+} 
+
+void Populacao::Sort() {
+    subjects.sort([](const Individuo& a, const Individuo& b) {
+        return a.fitness < b.fitness;
+    });
+}
+
+void Populacao::Ranking() {
+    int sumrank = (pop_size * (pop_size+1)) / 2;
+    
+    int rank = 1;
+    for(auto i = subjects.begin(); i != subjects.end(); ++i, ++rank) {
+        i->prob = static_cast<float>(rank) / static_cast<float>(sumrank);
+    }
+}
 
 
 /*elitismo acho que não precisa função, só pegar o indivíduo retornado da função de seleção
 e passar pra proxima geração (posso estar errado)*/
-
-float Otimizacao(float x, float y) {
-
-    return (2*(x*x) - 13*x + x*y - (7*y)/3); //não precisa operar 100% com binário, né? 🥺
-} 
