@@ -19,7 +19,7 @@ Individuo::Individuo(std::string x, std::string y, float z): gen_x(x), gen_y(y),
 
 
 
-Populacao::Populacao(){ //essa construção só vale pra primeira geração; provavelmente vai ter que mudar isso
+Populacao::Populacao(){
     string x = FloatToBinary(-15.0f);
     string y = FloatToBinary(-15.0f);
     float z = GetFitness(-15.0f, -15.0f);
@@ -43,18 +43,21 @@ float Populacao::UpdateFitness(){
     return fitness_medio = accumulate(fitness_global.begin(), fitness_global.end(), 0) / fitness_global.size();
 }
 
-string Populacao::FloatToBinary(float f) { //armazenar em cada indivíduo       -> dá pra chamar a função de Code
+string Populacao::FloatToBinary(float f) { //armazenar em cada indivíduo
     int integer = static_cast<int>(f);
     float floating = f - integer;
 
     string binteger = integer < 0? "1": "0";
     if(integer == 0) binteger += "0";
     else {
-        if(integer < 0) integer = -integer; //acho q n faz diferença fazer a operação com ele positivo ne?
+        if(integer < 0) integer = -integer;
         while(integer > 0) {
             binteger += integer%2? '1': '0';
             integer /= 2;
         }
+        size_t len = binteger.size();
+        if(len < 5) 
+            for(int i = 0; i < 5 - static_cast<int>(len); i++) binteger += '0';
         reverse(binteger.begin()+1, binteger.end()); //o +1 é pra manter o bit de sinal
     }
 
@@ -76,13 +79,16 @@ string Populacao::FloatToBinary(float f) { //armazenar em cada indivíduo       
             precisao--;
         }
     }
+
+    if(precisao)
+        for(int i = 0; i < precisao; i++) bfloating += '0';
     
     DEBUG_PRINT("Bin: " << "(" << f << ")" << binteger << "." << bfloating);
 
-    return binteger + "." + bfloating; //isso aqui é coisa de python
+    return binteger + "." + bfloating;
 }
 
-float Populacao::BinaryToFloat(const string &s) { //usar para a função de otimização  -> dá pra chamar a função de Decode
+float Populacao::BinaryToFloat(const string &s) { //usar para a função de otimização
     int inumber = 0;
     float f = 0;
     bool signal = s[0] == '1'? true: false;
@@ -142,7 +148,6 @@ Individuo Populacao::Cruzamento(Individuo a, Individuo b) { //função de cruzam
 } 
 
 void Populacao::Mutacao(Individuo *a) { //função de mutação (inversão dos bits)
-    //a gnt tem que definir a taxa de mutação, mas isso dá pra mexer quando as gerações estiverem ocorrendo
     string x = a->gen_x;
     string y = a->gen_y;
 
@@ -164,14 +169,13 @@ void Populacao::Sort() {
 }
 
 void Populacao::Ranking() {
+    Sort();
     int sumrank = (pop_size * (pop_size+1)) / 2;
-    
+
     int rank = 1;
     for(auto i = subjects.begin(); i != subjects.end(); ++i, ++rank) {
         i->prob = static_cast<float>(rank) / static_cast<float>(sumrank);
     }
+
+    //return Select();
 }
-
-
-/*elitismo acho que não precisa função, só pegar o indivíduo retornado da função de seleção
-e passar pra proxima geração (posso estar errado)*/
