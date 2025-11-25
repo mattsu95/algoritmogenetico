@@ -1,9 +1,8 @@
 // run code
 // g++ main.cpp ag.cpp ag.h geracoes.cpp geracoes.h
-#include "geracoes.h"
-#include "ag.h"
+#include <AlgoritmoGenetico.h>
 
-using namespace std;
+//using namespace std;
 
 int main(){
     // Menu e interações
@@ -31,13 +30,12 @@ int main(){
         // Cria e ger atual <- próxima geração
     // end While
 
-
     float taxa_cruzamento, taxa_mutacao;
-    int tamanho_populacao = 160;
+    int tamanho_populacao = 1;
     int num_geracoes = 5;
 
-    list<Populacao> geracoes_list;
-    list<float> fitness_medio;
+    std::list<Populacao> geracoes_list;
+    std::list<float> fitness_medio;
 
     Populacao* gen_atual = Generations::create_new(tamanho_populacao); // Cria uma nova geração
     //cout << gen_atual->subjects.front().gen_x << endl;
@@ -49,7 +47,7 @@ int main(){
         DEBUG_PRINT("X: " << i.gen_x);
         DEBUG_PRINT("Y: " << i.gen_y); 
         DEBUG_PRINT("FIT: " << i.fitness);
-        DEBUG_PRINT("PROB: " << i.prob << endl);
+        DEBUG_PRINT("PROB: " << i.prob << std::endl);
         counter++;
     }
     DEBUG_PRINT("==========================GERAÇÃO GERADA==========================")

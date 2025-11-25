@@ -10,13 +10,13 @@ endif
 CXX = g++
 
 # Flags de compilação:
-CXXFLAGS = -std=c++17 -Wall -Wextra -g
+CXXFLAGS = -std=c++17 -Wall -Wextra -g -I./src
 
 # .cpp principal
-SRC = main.cpp ag.cpp geracoes.cpp
+SRC = ./src/*.cpp main.cpp
 
 # O nome do executável final
-TARGET = algoritmoGenetico
+TARGET = algoritmoGenetico.out
 
 # --- Regras ---
 
