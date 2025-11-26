@@ -20,34 +20,40 @@ struct Individuo {
 };
 
 // Declaração da Função de Otimização (Função Objetivo)
-float Otimizacao(float x, float y);
+float GetFitness(float x, float y);
 
 // Classe População
 class Populacao { 
 public:
     std::list<Individuo> subjects;
     std::list<float> fitness_global;
-    float fitness_medio = 904;
-    int pop_size = 1;
+    double fitness_medio = 0;
+    unsigned int pop_size = 0;
+    double tax_mut;
+    double tax_rep;
+    int gen;
 
     // Construtor
-    Populacao();
+    Populacao(int gen, unsigned int pop_size, double tax_mut, double tax_rep);
     
     // Destrutor (Recomendado para limpar a lista encadeada)
     ~Populacao(); 
 
     // Métodos
-    void AdicionarIndividuo(float x, float y); // A ser implementado
-    float UpdateFitness();
+    void AdicionarIndividuo(std::string x, std::string y); // A ser implementado
+    double UpdateFitness();
 
-    // Métodos de Conversão
+    // Métodos de Conversão 
+    // TODO
+    // PASSAR PRA GENERATIONS
     std::string FloatToBinary(float f);
     float BinaryToFloat(const std::string &s);
 
     // Operadores Genéticos
-    Individuo Cruzamento(Individuo a, Individuo b);
+    std::vector<std::string> Cruzamento(Individuo a, Individuo b);
     void Mutacao(Individuo *a);
     void Sort();
+    Individuo Select();
     void Ranking();
 };
 
