@@ -18,7 +18,7 @@ namespace Generations{
         return dis(gen);
     }
 
-    void SalvarLog(const std::list<Populacao> populacoes){
+    void SalvarLog(const std::vector<Populacao> populacoes){
         std::ofstream arquivo("log.txt", std::ios::ate);
         
         if(arquivo.is_open()){
@@ -111,6 +111,47 @@ namespace Generations{
         if(signal) result = -result;
         
         return result;
+    }
+
+    void PlotGraph(std::vector<Populacao> geracoes){
+        // Gerar gráfico com a evolução da população toda
+        // Deve-se gerar um gra´fico de linha indicando o comportamento do valor do fitness me´dio de cada gerac¸a˜o;
+
+        RGBABitmapImageReference *imageRef = CreateRGBABitmapImageReference();
+        StringReference error;
+        
+        std::vector<double> y_fit;
+        std::vector<double> x_fit;
+        
+        double count = 0;
+        for(Populacao pop_atual : geracoes){
+            std::vector<double> x_subject;
+            std::vector<double> y_subject;
+            std::vector<double> z_subject;
+            
+            for(Individuo subject : pop_atual.subjects){
+                x_subject.emplace_back(BinaryToFloat(subject.gen_x));
+                y_subject.emplace_back(BinaryToFloat(subject.gen_y));
+                z_subject.emplace_back(subject.fitness);
+            }
+            // Gera o gráfico de cada geração
+            RGBABitmapImageReference *imageRefPop = CreateRGBABitmapImageReference();
+            DrawScatterPlot(imageRefPop, 1280, 720, &x_subject, &y_subject, &error);
+            std::vector<double> *pngDataPop = ConvertToPNG(imageRefPop->image);
+            WriteToFile(pngDataPop, "plot_pop_" + std::to_string(pop_atual.gen) + ".png");
+            DeleteImage(imageRefPop->image);
+
+            x_fit.emplace_back(pop_atual.gen);
+            y_fit.emplace_back(pop_atual.fitness_medio);
+        }
+
+
+        DrawScatterPlot(imageRef, 1280, 720, &x_fit, &y_fit, &error);
+
+        std::vector<double> *pngData = ConvertToPNG(imageRef->image);
+        WriteToFile(pngData, "plot.png");
+        DeleteImage(imageRef->image);
+
     }
 
     std::string RandomBin(){

@@ -1,10 +1,12 @@
 #ifndef GERACOES_H
 #define GERACOES_H
 
+#include "pbplots/pbPlots.hpp"
+#include "pbplots/supportLib.hpp"
+
 #include <random>
 #include <list>
 #include <fstream>
-
 
 class Populacao;
 
@@ -18,11 +20,13 @@ namespace Generations{
     
     int RandomInteger(int a, int b);
 
-    void SalvarLog(const std::list<Populacao> populacoes);
+    void SalvarLog(const std::vector<Populacao> populacoes);
 
     std::string FloatToBinary(float f);
     
     float BinaryToFloat(const std::string &s);
+
+    void PlotGraph(std::vector<Populacao> geracoes);
 
     std::string RandomBin();
 

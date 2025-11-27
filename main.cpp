@@ -42,7 +42,7 @@ int main(){
         if(!starting){ break; }
 
         // Valore dde LOG
-        std::list<Populacao> geracoes_list;
+        std::vector<Populacao> geracoes_list;
         std::list<double> fitness_medio;
 
         // Primeira geração com números aleatórios
@@ -76,7 +76,10 @@ int main(){
         std::cout << "========= O Algoritmo Rodou com sucesso =========" << std::endl;
         std::cout << "========= Pressione Enter para voltar ao menu =========" << std::endl;
         getch();
+        
+        Generations::PlotGraph(geracoes_list);
     }
+    
 
     return 0;
 }
