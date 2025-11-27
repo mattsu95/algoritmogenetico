@@ -13,7 +13,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -g -I./src
 
 # .cpp principal
-SRC = ./src/*.cpp main.cpp
+SRC = ./src/*.cpp ./src/menu/*.cpp main.cpp
 
 # O nome do executável final
 TARGET = algoritmoGenetico.out

@@ -1,5 +1,5 @@
 #include <AlgoritmoGenetico.h>
-#include <menu.h>
+#include <menu/menu.h>
 
 int main(){
     // Menu e interações

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "util.h"
 #include <iostream>
 #include <vector>
-#include <util.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
