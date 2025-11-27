@@ -5,14 +5,15 @@
 #include <list>
 #include <fstream>
 
-inline unsigned int POP_SIZE;
-inline int GEN;
-inline double TAX_MUT;
-inline double TAX_REP;
 
 class Populacao;
 
 namespace Generations{
+    inline unsigned int POP_SIZE;
+    inline int GEN;
+    inline double TAX_MUT;
+    inline double TAX_REP;
+    
     float RandomFloat(float a, float b);
     
     int RandomInteger(int a, int b);

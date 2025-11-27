@@ -1,5 +1,4 @@
 #include "menu.h"
-#include "util.h"
 
 // Configuracoes do menu options
 int GAME_WIDTH = 3;
@@ -22,8 +21,8 @@ int _mostrar_menu_interativo(const char *opcoes[], int n, const char *titulo) {
 
       // Exibe as opções do menu
       for (int i = 0; i < n; i++) {
-         char opcao_formatada[MENU_WIDTH + 1];
-         _formatar_opcao(opcoes[i], opcao_formatada, MENU_WIDTH, "");
+         char opcao_formatada[10];
+         _formatar_opcao(opcoes[i], opcao_formatada, 10, "");
 
          if (i == selecionado) {
             printf( BG_BBLACK FG_GREEN " %s " RESET "\n", opcao_formatada); // Destaca a opção com vídeo reverso
@@ -61,7 +60,7 @@ int _mostrar_menu_interativo(const char *opcoes[], int n, const char *titulo) {
 
 // Função para exibir o menu interativo de opcoes
 // Menu especial, com opcoes de valores que podem ser alterados
-int _mostrar_options(const char *opcoes[], int n, const char *titulo, int *variaveis) {
+int _mostrar_options(const char *opcoes[], int n, const char *titulo, std::vector<int*> variaveis) {
    int selecionado = 0;
 
    while (1) {
@@ -70,10 +69,10 @@ int _mostrar_options(const char *opcoes[], int n, const char *titulo, int *varia
       // Exibe as opções do menu
       for (int i = 0; i < n; i++) {
          char opcao_formatada[MENU_WIDTH + 1];
-         _formatar_variavel(opcoes[i], opcao_formatada, MENU_WIDTH, variaveis[i]);
+         _formatar_variavel(opcoes[i], opcao_formatada, MENU_WIDTH, *variaveis[i]);
 
          if (i == selecionado) {
-            printf(BG_BBLACK FG_GREEN " %s " RESET "\n", opcao_formatada); // Destaca a opção com vídeo reverso
+            printf(BG_BBLACK FG_GREEN " %s \n" RESET, opcao_formatada); // Destaca a opção com vídeo reverso
          } else {
             printf(BG_BLACK FG_WHITE " %s\n" RESET, opcao_formatada);
          }
@@ -103,11 +102,11 @@ int _mostrar_options(const char *opcoes[], int n, const char *titulo, int *varia
          break;
          case KEY_RIGHT:
          case KEY_D:
-            variaveis[selecionado] < 20 ? variaveis[selecionado]++ : 0; // Limita o valor maximo das variaveis
+            *variaveis[selecionado] < 100 ? *variaveis[selecionado] = *variaveis[selecionado] + 1: 0; // Limita o valor maximo das variaveis
          break;
          case KEY_LEFT:
          case KEY_A:
-            variaveis[selecionado] <= 3 ? 0 : variaveis[selecionado]--; // Limita o valor minimo das variaveis
+            *variaveis[selecionado] <= 0 ? 0 : *variaveis[selecionado] = *variaveis[selecionado] - 1; // Limita o valor minimo das variaveis
          break;
       }
    }
@@ -123,22 +122,20 @@ int get_width(){
   return GAME_WIDTH;
 }
 
-int start_menu() {
+int start_menu(std::vector<int*> variaveis) {
    // Configuração do menu
-   const char *titulo = "QUADRADO MÁGICO";
+   const char *titulo = "ALGORITMO GENÉTICO";
    const char *opcoes[] = {
       "Start",
       "Options",
       "Exit"
    };
-   const char *options[] = {
-      "Width",
-      "Height"
-   };
 
-   int variaveis[] = {
-      GAME_WIDTH,
-       GAME_HEIGHT,
+   const char *options[] = {
+      "Tamanho Populacao   ",
+      "Numero de Geracoes  ",
+      "Taxa de Cruzamento %",
+      "Taxa de Mutacao    %"
    };
 
    while (1) {
@@ -149,10 +146,8 @@ int start_menu() {
 
       // Resultado de cada opcao escolhida
       if(!strcmp(opcoes[escolha], "Options")){
-         int options_menu = _mostrar_options(options, 2, titulo, variaveis); // Carrega Menu de opcoes
+         int options_menu = _mostrar_options(options, 4, titulo, variaveis); // Carrega Menu de opcoes
       }else if(!strcmp(opcoes[escolha], "Start")){
-         GAME_WIDTH = variaveis[0]; // Atualiza as variaveis do tamanho do tabuleiro do jogo
-         GAME_HEIGHT = variaveis[1];
          return 1; // Retorna 1 para iniciar o jogo
       }else{
          break;

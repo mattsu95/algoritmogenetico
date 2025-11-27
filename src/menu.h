@@ -1,10 +1,15 @@
+#pragma once
+
+#include <iostream>
+#include <vector>
+#include <util.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
 #include <string.h>
 
 // Comprimento máximo de uma linha do menu
-#define MENU_WIDTH 10
+#define MENU_WIDTH 24
 
 // Funções Do Menu Principal -----------------------------------------------------------------------
 
@@ -21,4 +26,4 @@ int _mostrar_options(const char *opcoes[], int n, const char *titulo, int *varia
 int get_height();
 int get_width();
 
-int start_menu();
+int start_menu(std::vector<int*> variaveis);

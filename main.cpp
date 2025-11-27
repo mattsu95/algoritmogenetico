@@ -1,9 +1,5 @@
-// run code
-// g++ main.cpp ag.cpp ag.h geracoes.cpp geracoes.h
 #include <AlgoritmoGenetico.h>
-#include <util.h>
-
-//using namespace std;
+#include <menu.h>
 
 int main(){
     // Menu e interações
@@ -32,58 +28,55 @@ int main(){
 
     // end While
 
-    float taxa_cruzamento = 0.78, taxa_mutacao = 0.045;
+    int taxa_cruzamento = 78, taxa_mutacao = 4;
     int tamanho_populacao = 10;
     int num_geracoes = 5;
+    std::vector<int*> propriedades = {&tamanho_populacao, &num_geracoes, &taxa_cruzamento, &taxa_mutacao};
 
-    // Valore dde LOG
-    std::list<Populacao> geracoes_list;
-    std::list<double> fitness_medio;
+    while(1){
+        // Reseta valor de gerações
+        num_geracoes = 5;
 
-    Populacao* gen_atual = Generations::create_new(tamanho_populacao, taxa_mutacao, taxa_cruzamento); // Cria uma nova geração
-    //cout << gen_atual->subjects.front().gen_x << endl;
+        // Inicia o menu interativo
+        int starting = start_menu(propriedades);
+        if(!starting){ break; }
 
-    Individuo i = gen_atual->Select();
-    DEBUG_PRINT("INDIVIDUO SELECIONADO");
-    DEBUG_PRINT("X: " << i.gen_x);
-    DEBUG_PRINT("Y: " << i.gen_y); 
-    DEBUG_PRINT("FIT: " << i.fitness);
-    DEBUG_PRINT("PROB: " << i.prob << std::endl);
+        // Valore dde LOG
+        std::list<Populacao> geracoes_list;
+        std::list<double> fitness_medio;
 
-    while (num_geracoes > 0)
-    {
+        // Primeira geração com números aleatórios
+        Populacao* gen_atual = Generations::create_new(tamanho_populacao, taxa_mutacao/100.0f, taxa_cruzamento/100.0f); // Cria uma nova geração
 
-        DEBUG_GEN(gen_atual);
-        
-        // Salvar os dados da população atual
-        // Atualiza os dados pro LOG
-        fitness_medio.emplace_back(gen_atual->UpdateFitness());
-        geracoes_list.emplace_back(*gen_atual);
-        // Salva LOG
-        //Generations::SalvarLog(geracoes_list.back());
+        while (num_geracoes > 0)
+        {
+            DEBUG_GEN(gen_atual);
 
-        // Populacao last_gen = geracoes_list.back();
-        DEBUG_PRINT("================ GERAÇÃO [" << last_gen.gen << "] ================");
-        DEBUG_PRINT("GERAÇÃO NÚMERO:    \t" << last_gen.gen);
-        DEBUG_PRINT("TAMANHO POPULAÇÃO: \t" << last_gen.pop_size);
-        DEBUG_PRINT("TAXA DE MUTAÇÃO:   \t" << last_gen.tax_mut);
-        DEBUG_PRINT("TAXA REPRODUÇÃO:   \t" << last_gen.tax_rep);
-        DEBUG_PRINT("FITNESS MÉDIO:     \t" << last_gen.fitness_medio);
-        Individuo gym_rat = last_gen.subjects.back();
-        DEBUG_PRINT("MELHOR FITNESS:    \t" << gym_rat.fitness);
-        DEBUG_PRINT("MELHOR X:          \t" << gym_rat.gen_x);
-        DEBUG_PRINT("MELHOR Y:          \t" << gym_rat.gen_y);
-        DEBUG_PRINT("================ GERAÇÃO [" << last_gen.gen << "] ================");
-        DEBUG_PRINT("");
-        // =================================================================================
-        
-        // Selecionar indicíduos com o fitness (atualiza a população atual)
-        gen_atual = Generations::create_next(*gen_atual);
+            // Salvar os dados da população atual
+            // Atualiza os dados pro LOG
+            fitness_medio.emplace_back(gen_atual->UpdateFitness());
+            geracoes_list.emplace_back(*gen_atual);
 
-        num_geracoes--;
+            // Selecionar indicíduos com o fitness
+            Populacao* prox_gen = Generations::create_next(*gen_atual);
+
+            // Atualiza a geração atual com a próxima
+            delete gen_atual; // Evita vazamento de memória
+            gen_atual = prox_gen;
+
+            num_geracoes--;
+        }
+
+        // Salva informações no arquivo de log
+        Generations::SalvarLog(geracoes_list);
+
+        // Limpa pro próximo loop
+        delete gen_atual;
+
+        std::cout << "========= O Algoritmo Rodou com sucesso =========" << std::endl;
+        std::cout << "========= Pressione Enter para voltar ao menu =========" << std::endl;
+        getch();
     }
-
-    Generations::SalvarLog(geracoes_list);
 
     return 0;
 }
