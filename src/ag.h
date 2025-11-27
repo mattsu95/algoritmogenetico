@@ -43,12 +43,6 @@ public:
     void AdicionarIndividuo(std::string x, std::string y); // A ser implementado
     double UpdateFitness();
 
-    // Métodos de Conversão 
-    // TODO
-    // PASSAR PRA GENERATIONS
-    std::string FloatToBinary(float f);
-    float BinaryToFloat(const std::string &s);
-
     // Operadores Genéticos
     std::vector<std::string> Cruzamento(Individuo a, Individuo b);
     void Mutacao(Individuo *a);

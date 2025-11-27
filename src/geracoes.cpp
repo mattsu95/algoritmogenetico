@@ -43,6 +43,76 @@ namespace Generations{
         }
     }
 
+    std::string FloatToBinary(float f){
+        int integer = static_cast<int>(f);
+        float floating = f - integer;
+
+        std::string binteger = integer < 0? "1": "0";
+        if(integer == 0) binteger += "0";
+        else {
+            if(integer < 0) integer = -integer;
+            while(integer > 0) {
+                binteger += integer%2? '1': '0';
+                integer /= 2;
+            }
+            size_t len = binteger.size();
+            if(len < 5) 
+                for(int i = 0; i < 5 - static_cast<int>(len); i++) binteger += '0';
+            reverse(binteger.begin()+1, binteger.end()); //o +1 é pra manter o bit de sinal
+        }
+
+
+        std::string bfloating = "";
+        int precisao = 3;
+        if(floating == 0) bfloating = "0";
+        else {
+            if(floating < 0) floating = -floating;
+            while(precisao > 0 && floating > 0) {
+                floating *= 2;
+
+                if(floating >= 1) {
+                    bfloating += '1';
+                    floating -= 1;
+                }
+                else bfloating += '0';
+
+                precisao--;
+            }
+        }
+
+        if(precisao)
+            for(int i = 0; i < precisao; i++) bfloating += '0';
+        
+        DEBUG_PRINT("Bin: " << "(" << f << ")" << binteger << "." << bfloating);
+
+        return binteger + "." + bfloating;
+    }
+
+    float BinaryToFloat(const std::string &s){
+        int inumber = 0;
+        float f = 0;
+        bool signal = s[0] == '1'? true: false;
+        size_t intlen = s.find(".");
+        size_t int_start = 1;
+        size_t int_end = intlen - 1;
+
+        int i = 0;
+        int exp = 0;
+        for(i = static_cast<int>(int_end); i >= static_cast<int>(int_start); i--, exp++) {
+            if(s[i] == '1') inumber += (1 << exp); //multiplicando por potencia de 2
+        }
+        
+        exp = -1;
+        for(i = static_cast<int>(intlen) + 1; i < static_cast<int>(s.size()); i++, exp--) {
+            if(s[i] == '1') f += pow(2.0, exp);
+        }
+        
+        float result = static_cast<float>(inumber) + f;
+        if(signal) result = -result;
+        
+        return result;
+    }
+
     std::string RandomBin(){
         std::string bin = "";
 

@@ -20,6 +20,10 @@ namespace Generations{
 
     void SalvarLog(const std::list<Populacao> populacoes);
 
+    std::string FloatToBinary(float f);
+    
+    float BinaryToFloat(const std::string &s);
+
     std::string RandomBin();
 
     Populacao* create_new(unsigned int pop_size, double tax_mut, double tax_rep);
