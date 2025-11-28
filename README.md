@@ -1,0 +1,7 @@
+## run
+
+```
+
+make && ./algoritmoGenetico.out
+
+```
