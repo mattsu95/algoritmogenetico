@@ -37,6 +37,7 @@ vector<string> Populacao::Cruzamento(Individuo a, Individuo b) { //função de c
     string x = mascara, y = mascara;
     int len = xa.length();
 
+    
     for(int i = 0; i < len; i++) {
         DEBUG_PRINT("[CRUZANDO PROCESS] : mascara: " << mascara << " | mascara[i]: " << mascara[i] << " | x: "<< x << " | y: " << y << " | xa: " << xa << " | xb: " << xb << " | len: " << len << " | ya: " << ya << " | yb: " << yb);
         if(mascara[i] == '0') {
@@ -52,26 +53,52 @@ vector<string> Populacao::Cruzamento(Individuo a, Individuo b) { //função de c
             y[i] = '.';
         }
     }
+    
+    if(static_cast<int>(x.find("11111.")) != -1){
+        DEBUG_PRINT("É -15 ou 15!!!!");
+        DEBUG_PRINT("DEU: " << static_cast<int>(x.find("11111.")));
+        x = "11111.000";
+        DEBUG_PRINT("X: " << x);
+    }else if(static_cast<int>(x.find("01111.")) != -1){
+        DEBUG_PRINT("É -15 ou 15!!!!");
+        DEBUG_PRINT("DEU: " << static_cast<int>(x.find("11111.")));
+        x = "01111.000";
+        DEBUG_PRINT("X: " << x);
+    }
+
+    if(static_cast<int>(y.find("11111.")) != -1){
+        DEBUG_PRINT("É -15 ou 15!!!!");
+        DEBUG_PRINT("DEU: " << static_cast<int>(y.find("11111.")));
+        y = "11111.000";
+        DEBUG_PRINT("Y: " << y);
+    }else if(static_cast<int>(y.find("01111.")) != -1){
+        DEBUG_PRINT("É -15 ou 15!!!!");
+        DEBUG_PRINT("DEU: " << static_cast<int>(y.find("11111.")));
+        y = "01111.000";
+        DEBUG_PRINT("Y: " << y);
+    }
 
     DEBUG_PRINT("[CRUZAMENTO] " << "X: " << x << "| y: " << y);
+
     AdicionarIndividuo(x, y);
     Mutacao(&subjects.back());
 
-    return vector<string>() = {x, y}; //depois de retornar ainda tem que adicionar na população
+    return vector<string>() = {x, y};
 } 
 
 void Populacao::Mutacao(Individuo *a) { //função de mutação (inversão dos bits)
     if(Generations::RandomFloat(0.0f, 1.001f) > tax_mut){ return; } // Chance de mutação
 
+    DEBUG_PRINT("[MUTATION GAMES]");
+    DEBUG_PRINT("Antes: x: " << a->gen_x << " | y: " << a->gen_y);
+
     string x = a->gen_x;
     string y = a->gen_y;
 
-    int len = x.length();
+    reverse(&x[0], &x[5]);reverse(&x[6], &x[x.size()]);
+    reverse(&y[0], &y[5]);reverse(&y[6], &y[x.size()]);
 
-    for(int i = 0; i < len; i++) {
-        if(x[i] != '.') x[i] = x[i] == '0'? '1': '0';
-        if(y[i] != '.') y[i] = y[i] == '0'? '1': '0';
-    }
+    DEBUG_PRINT("Depois: x: " << x << " | y:" << y);
 
     a->gen_x = x;
     a->gen_y = y;

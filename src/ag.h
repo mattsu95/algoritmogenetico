@@ -36,11 +36,11 @@ public:
     // Construtor
     Populacao(int gen, unsigned int pop_size, double tax_mut, double tax_rep);
     
-    // Destrutor (Recomendado para limpar a lista encadeada)
+    // Destrutor
     ~Populacao(); 
 
     // Métodos
-    void AdicionarIndividuo(std::string x, std::string y); // A ser implementado
+    void AdicionarIndividuo(std::string x, std::string y);
     double UpdateFitness();
 
     // Operadores Genéticos
@@ -49,10 +49,4 @@ public:
     void Sort();
     Individuo Select();
     void Ranking();
-};
-
-// Classe Gerações (Placeholder conforme seu código original)
-class Geracoes {
-    // Adicionar métodos estáticos ou membros conforme necessário
-    // ex: static void create_new();
 };

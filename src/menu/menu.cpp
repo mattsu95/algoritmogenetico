@@ -77,6 +77,7 @@ int _mostrar_options(const char *opcoes[], int n, const char *titulo, std::vecto
             printf(BG_BLACK FG_WHITE " %s\n" RESET, opcao_formatada);
          }
       }
+      printf( BOLD " <- " "Inc/Dec Values"  " -> " " | Use Numpad for shortcut (1, 2, 3...) \n" RESET);
       printf("Press Enter to confirm\n");
 
       // Lê a tecla pressionada
@@ -102,11 +103,41 @@ int _mostrar_options(const char *opcoes[], int n, const char *titulo, std::vecto
          break;
          case KEY_RIGHT:
          case KEY_D:
-            *variaveis[selecionado] < 100 ? *variaveis[selecionado] = *variaveis[selecionado] + 1: 0; // Limita o valor maximo das variaveis
+            *variaveis[selecionado] < 999 ? *variaveis[selecionado] = *variaveis[selecionado] + 1: *variaveis[selecionado] = 0; // Limita o valor maximo das variaveis
          break;
          case KEY_LEFT:
          case KEY_A:
-            *variaveis[selecionado] <= 0 ? 0 : *variaveis[selecionado] = *variaveis[selecionado] - 1; // Limita o valor minimo das variaveis
+            *variaveis[selecionado] > 0 ? *variaveis[selecionado] = *variaveis[selecionado] - 1 : *variaveis[selecionado] = 999; // Limita o valor minimo das variaveis
+         break;
+         case '1':
+            *variaveis[selecionado] = 100;
+         break;
+         case '2':
+            *variaveis[selecionado] = 200;
+         break;
+         case '3':
+            *variaveis[selecionado] = 300;
+         break;
+         case '4':
+            *variaveis[selecionado] = 400;
+         break;
+         case '5':
+            *variaveis[selecionado] = 500;
+         break;
+         case '6':
+            *variaveis[selecionado] = 600;
+         break;
+         case '7':
+            *variaveis[selecionado] = 700;
+         break;
+         case '8':
+            *variaveis[selecionado] = 800;
+         break;
+         case '9':
+            *variaveis[selecionado] = 900;
+         break;
+         case '0':
+            *variaveis[selecionado] = 0;
          break;
       }
    }
@@ -123,6 +154,8 @@ int get_width(){
 }
 
 int start_menu(std::vector<int*> variaveis) {
+   clrscr();
+   
    // Configuração do menu
    const char *titulo = "ALGORITMO GENÉTICO";
    const char *opcoes[] = {
@@ -146,7 +179,7 @@ int start_menu(std::vector<int*> variaveis) {
 
       // Resultado de cada opcao escolhida
       if(!strcmp(opcoes[escolha], "Options")){
-         int options_menu = _mostrar_options(options, 4, titulo, variaveis); // Carrega Menu de opcoes
+         _mostrar_options(options, 4, titulo, variaveis); // Carrega Menu de opcoes
       }else if(!strcmp(opcoes[escolha], "Start")){
          return 1; // Retorna 1 para iniciar o jogo
       }else{

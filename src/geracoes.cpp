@@ -118,27 +118,97 @@ namespace Generations{
         // Deve-se gerar um gra´fico de linha indicando o comportamento do valor do fitness me´dio de cada gerac¸a˜o;
 
         RGBABitmapImageReference *imageRef = CreateRGBABitmapImageReference();
-        StringReference error;
+        StringReference *error = CreateStringReference(toVector(L""));
         
         std::vector<double> y_fit;
         std::vector<double> x_fit;
         
-        double count = 0;
         for(Populacao pop_atual : geracoes){
             std::vector<double> x_subject;
             std::vector<double> y_subject;
             std::vector<double> z_subject;
+
+            ScatterPlotSettings* pop_settings = GetDefaultScatterPlotSettings();
+            pop_settings->xMax = 16;
+            pop_settings->xMin = -16;
+            pop_settings->yMax = 16;
+            pop_settings->yMin = -16;
+            pop_settings->autoBoundaries = false;
+            pop_settings->autoPadding = true;
+
+            pop_settings->height = 600;
+            pop_settings->width = 600;
+
+            pop_settings->xLabel = toVector(L"Gene X");
+            pop_settings->yLabel = toVector(L"Gene Y");
+            pop_settings->title = toVector(L"GENETIC ALGORITHM");
+
+            std::list<std::vector<double>> memory_pool_x;
+            std::list<std::vector<double>> memory_pool_y;
+            std::vector<ScatterPlotSeries*> series_trash;
             
             for(Individuo subject : pop_atual.subjects){
-                x_subject.emplace_back(BinaryToFloat(subject.gen_x));
-                y_subject.emplace_back(BinaryToFloat(subject.gen_y));
+                double val_x = BinaryToFloat(subject.gen_x);
+                double val_y = BinaryToFloat(subject.gen_y);
+                
+                x_subject.emplace_back(val_x);
+                y_subject.emplace_back(val_y);
                 z_subject.emplace_back(subject.fitness);
+                
+                memory_pool_x.push_back({val_x});
+                memory_pool_y.push_back({val_y});
+
+                ScatterPlotSeries* dot_fill = GetDefaultScatterPlotSeriesSettings();
+                dot_fill->xs = &memory_pool_x.back();
+                dot_fill->ys = &memory_pool_y.back();
+                dot_fill->linearInterpolation = false;
+                dot_fill->pointType = toVector(L"dots");
+
+                double alpha = ((subject.fitness + 35) / (905 + 35));
+                alpha = alpha < 0 ? 0 : alpha > 1 ? 1 : alpha; // Normaliza
+
+                dot_fill->color = CreateRGBAColor(0.15, 0.15, 0.15, alpha);
+
+                pop_settings->scatterPlotSeries->push_back(dot_fill);
+                series_trash.push_back(dot_fill);
             }
-            // Gera o gráfico de cada geração
+
+            ScatterPlotSeries* pop_series = GetDefaultScatterPlotSeriesSettings();
+            pop_series->linearInterpolation = false;
+            pop_series->pointType = toVector(L"circles");
+            pop_series->color = CreateRGBColor(1, 0, 0); //vermelho
+            pop_series->xs = &x_subject;
+            pop_series->ys = &y_subject;
+            //pop_settings->scatterPlotSeries->push_back(pop_series);
+            //series_trash.push_back(pop_series);
+
+            ScatterPlotSeries* best_series = GetDefaultScatterPlotSeriesSettings();
+            std::vector<double> x_best = {x_subject.back()}; x_subject.pop_back();
+            std::vector<double> y_best = {y_subject.back()}; y_subject.pop_back();
+            best_series->xs = &x_best;
+            best_series->ys = &y_best;
+            best_series->linearInterpolation = false;
+            best_series->pointType = toVector(L"filled triangles");
+            best_series->color = CreateRGBColor(0, 1, 0); // verde
+
+            ScatterPlotSeries best_series_outline = *best_series;
+            best_series_outline.pointType = toVector(L"triangles");
+            best_series_outline.color = CreateRGBColor(0, 0, 0);
+
+            pop_settings->scatterPlotSeries->push_back(pop_series);
+            pop_settings->scatterPlotSeries->push_back(&best_series_outline);
+            pop_settings->scatterPlotSeries->push_back(best_series);
+            //series_trash.push_back(best_series);
+
+            // Gera a imagem dessa geração
             RGBABitmapImageReference *imageRefPop = CreateRGBABitmapImageReference();
-            DrawScatterPlot(imageRefPop, 1280, 720, &x_subject, &y_subject, &error);
+            DrawScatterPlotFromSettings(imageRefPop, pop_settings, error);
+
+            // Salva arquivo: plot_pop_0.png, plot_pop_1.png ...
             std::vector<double> *pngDataPop = ConvertToPNG(imageRefPop->image);
-            WriteToFile(pngDataPop, "plot_pop_" + std::to_string(pop_atual.gen) + ".png");
+            std::string filename = "plot_pop_" + std::to_string(pop_atual.gen) + ".png";
+            WriteToFile(pngDataPop, filename);
+            
             DeleteImage(imageRefPop->image);
 
             x_fit.emplace_back(pop_atual.gen);
@@ -146,7 +216,7 @@ namespace Generations{
         }
 
 
-        DrawScatterPlot(imageRef, 1280, 720, &x_fit, &y_fit, &error);
+        DrawScatterPlot(imageRef, 1280, 720, &x_fit, &y_fit, error);
 
         std::vector<double> *pngData = ConvertToPNG(imageRef->image);
         WriteToFile(pngData, "plot.png");
@@ -161,7 +231,7 @@ namespace Generations{
         for(int i = 0; i < 9; i++){
             if(i == 5) {
                 bin += '.';
-                if(bin == "11111." || "01111.") {
+                if(bin == "11111." || bin == "01111.") {
                     bin += "000";
                     return bin;
                 }
@@ -177,6 +247,7 @@ namespace Generations{
 
     Populacao* create_new(unsigned int pop_size, double tax_mut, double tax_rep){
         DEBUG_PRINT("----- CREATE NEW GENERATION -----");
+        GEN = 0;
         POP_SIZE = pop_size;
         TAX_MUT = tax_mut;
         TAX_REP = tax_rep;
@@ -214,7 +285,7 @@ namespace Generations{
         Populacao* new_pop = new Populacao(GEN, POP_SIZE, TAX_MUT, TAX_REP);
         
         // Selecionar POP_SIZE pares para acasalar
-        for(int i = 0; i < POP_SIZE; i++){
+        for(unsigned int i = 0; i < POP_SIZE; i++){
             Individuo a = gen_anterior.Select();
             Individuo b = gen_anterior.Select();
             DEBUG_PRINT("INDV A: " << a.gen_x << " | " << a.gen_y << " | " << a.fitness);
@@ -225,8 +296,8 @@ namespace Generations{
                 // cruzar e mutar(dentro do cruzamento)
                 new_pop->Cruzamento(a, b);
             }else{
-                // se não cruzar, adiciona o melhor individuo entre os pais
-                new_pop->AdicionarIndividuo(a.fitness > b.fitness ? a.gen_x, a.gen_y : b.gen_x, b.gen_y);
+                // se não cruzar, adiciona o pior individuo entre os pais (pra ter mais variações)
+                new_pop->AdicionarIndividuo(a.fitness < b.fitness ? a.gen_x, a.gen_y : b.gen_x, b.gen_y);
             }
 
         }

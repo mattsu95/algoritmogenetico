@@ -20,7 +20,7 @@ TARGET = algoritmoGenetico.out
 
 # --- Regras ---
 
-# Regra principal (o que 'make' faz por padrão)
+# Regra principal
 all: $(TARGET)
 
 # Regra para buildar o executável
